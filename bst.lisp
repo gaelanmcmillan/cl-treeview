@@ -11,6 +11,11 @@
   (left nil)
   (right nil))
 
+(defun fstring (&rest args)
+  (let ((str (make-array 0 :element-type 'character :fill-pointer 0)))
+    (apply 'format (cons str args))
+    str))
+
 (defun write-children (tree file)
   (flet ((try-write-child (child)
           (when child
@@ -20,12 +25,12 @@
     (try-write-child (left tree))
     (try-write-child (right tree))))
   
-(defun show-tree (tree filename)
+(defun show-tree (tree filename &optional (graphname 'g))
   (with-open-file (outfile filename
                   :direction :output
                   :if-exists :append
                   :if-does-not-exist :create)
-    (format outfile "digraph {~%")
+    (format outfile "digraph ~a {~%" graphname)
     (write-children tree outfile)
     (format outfile "}~%")))
 
@@ -35,4 +40,5 @@
             :left (tn :key 'd)) 
     :right (tn :key 'c)))
 
-(show-tree *t* "test1.dot")
+(show-tree *t* "test1.dot" 'g2)
+(show-tree *t* "test1.dot" 'g3)
