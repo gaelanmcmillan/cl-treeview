@@ -1,9 +1,3 @@
-; BST implementation in lisp
-
-; (defun bst-insert (value head))
-
-; (:conc-name nil) allows us to use slots without prefixes,
-; i.e (left *node*) instead of (tree-left *node*)
 (defstruct (tree-node 
   (:conc-name nil)
   (:constructor tn))
@@ -11,11 +5,13 @@
   (left nil)
   (right nil))
 
+; (fstring "~a.dot" 'symbol) -> "SYMBOL.dot"
 (defun fstring (&rest args)
   (let ((str (make-array 0 :element-type 'character :fill-pointer 0)))
     (apply 'format (cons str args))
     str))
 
+; recursively write tree nodes to file in .dot format
 (defun write-children (tree file)
   (flet ((try-write-child (child)
           (when child
@@ -25,20 +21,40 @@
     (try-write-child (left tree))
     (try-write-child (right tree))))
   
-(defun show-tree (tree filename &optional (graphname 'g))
-  (with-open-file (outfile filename
+; renders and appends a tree to a file as a .dot digraph
+(defun render-to-file (tree filename &optional (graphname "g"))
+  (with-open-file (outfile (fstring "~a.dot" filename)
                   :direction :output
                   :if-exists :append
                   :if-does-not-exist :create)
-    (format outfile "digraph ~a {~%" graphname)
+    (format outfile "digraph ~a {~%  center = true~%" graphname)
     (write-children tree outfile)
-    (format outfile "}~%")))
+    (format outfile "}~%~%")))
 
-(defvar *t*
+
+
+; testing
+(defvar *t1*
   (tn :key 'a
     :left (tn :key 'b
             :left (tn :key 'd)) 
     :right (tn :key 'c)))
 
-(show-tree *t* "test1.dot" 'g2)
-(show-tree *t* "test1.dot" 'g3)
+(defvar *t2*
+  (tn :key 'a
+    :left (tn :key 'b
+            :left (tn :key 'd)
+            :right (tn :key 'e)) 
+    :right (tn :key 'c)))
+
+(defvar *t3*
+  (tn :key 'a
+    :left (tn :key 'b
+            :left (tn :key 'd)
+            :right (tn :key 'e)) 
+    :right (tn :key 'c
+            :left (tn :key 'f))))
+
+(show-tree *t1* "tst" 'g1)
+(show-tree *t2* "tst" 'g2)
+(show-tree *t3* "tst" 'g3)
